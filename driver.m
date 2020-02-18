@@ -109,13 +109,11 @@ function save_challenge_predictions(output_directory,recording, scores, labels,c
 
 	output_file = ([output_directory filesep recording '.csv']);
 
-	commaHeader = [classes;repmat({','},1,numel(classes))]; %insert commaas
-	commaHeader = commaHeader(:)';
-	textHeader = cell2mat(commaHeader); %cHeader in text with commas
+	Total_classes = strjoin(classes,','); %insert commaas
 	%write header to file
 	fid = fopen(output_file,'w');
 	fprintf(fid,'#%s\n',recording);
-	fprintf(fid,'%s\n',textHeader);
+	fprintf(fid,'%s\n',Total_classes);
 	fclose(fid);
 
 	%write data to end of file

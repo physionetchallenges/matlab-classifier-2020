@@ -10,7 +10,7 @@ function [score, label] = get_12ECG_score(data,header_data,classes, model)
     [tmp_label,tmp_score] = predict(model,features);
 
     label(tmp_label)=1;
-    score=tmp_score;
+    score=score*.01;
 
 end
 

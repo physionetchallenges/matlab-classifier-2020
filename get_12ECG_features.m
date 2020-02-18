@@ -142,7 +142,7 @@ function ind = findpeaks(data,limit,spacing)
             h_a = x(start: start + len);  % after
 
 		for ii = length(peak_candidate)
-			if peak_candidate(ii) && (h_c(ii) > h_b(ii)) && (h_c(ii) > h_a(ii))
+			if (peak_candidate(ii)==1) && ((h_c(ii) > h_b(ii))) && ((h_c(ii) > h_a(ii)))
 				peak_candidate(ii)=true;
 			end
 		end
