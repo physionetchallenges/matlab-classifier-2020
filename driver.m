@@ -97,10 +97,9 @@ function classes = get_classes(input_directory,files)
 			break
         		end
 		end
-
         	fclose(fid);
-
 	end
+	classes=sort(classes)
 end
 
 

@@ -1,6 +1,7 @@
 function features = get_12ECG_features(data, hea_data)
 
 	% read number of leads, sample frequency and gain from the header.	
+
 	tmp_hea = strsplit(hea_data{1},' ');
 	number_of_leads = str2num(tmp_hea{2});
 	sample_Fs = str2num(tmp_hea{3});
@@ -20,30 +21,31 @@ function features = get_12ECG_features(data, hea_data)
 %    for ii=1:number_of_leads:
 %        [peaks(ii,:),idx(ii,:)] = detect_peaks(data(ii,:),sample_Fs,gain_lead(ii));
 %    end
-	
+
 	[peaks,idx]=detect_peaks(data(1,:),sample_Fs,gain_lead(1));
 
+
 	% mean
-	mean_RR = nanmean(idx/sample_Fs*1000);
+	mean_RR = nanmean((idx/sample_Fs)*1000);
 	mean_Peaks = nanmean(peaks*gain_lead(1));
 	% median
-	median_RR = nanmedian(idx/sample_Fs*1000);
+	median_RR = nanmedian((idx/sample_Fs)*1000);
         median_Peaks = nanmedian(peaks*gain_lead(1));
 
       	% standard deviation
-	std_RR = std(idx/sample_Fs*1000);
+	std_RR = std((idx/sample_Fs)*1000);
 	std_Peaks = std(peaks*gain_lead(1));
 
 	%    variance
-    	var_RR = var(idx/sample_Fs*1000);
+    	var_RR = var((idx/sample_Fs)*1000);
     	var_Peaks = var(peaks*gain_lead(1));
 
 	%   Skewness
-    	skew_RR = skewness(idx/sample_Fs*1000);
+    	skew_RR = skewness((idx/sample_Fs)*1000);
     	skew_Peaks = skewness(peaks*gain_lead(1));
 
 	%   Kurtosis
-    	kurt_RR = kurtosis(idx/sample_Fs*1000);
+    	kurt_RR = kurtosis((idx/sample_Fs)*1000);
     	kurt_Peaks = kurtosis(peaks*gain_lead(1));
 
 	features = [mean_RR mean_Peaks median_RR median_Peaks std_RR std_Peaks var_RR var_Peaks skew_RR skew_Peaks kurt_RR kurt_Peaks];
@@ -77,20 +79,31 @@ function [detected_peaks_values,detected_peaks_indices] = detect_peaks(ecg_measu
         % Measurements filtering - 0-15 Hz band pass filter.
         filtered_ecg_measurements = bandpass_filter(ecg_measurements, filter_lowcut, filter_highcut, signal_frequency, filter_order);
 
+
+	filtered_ecg_measurements(1:6)=filtered_ecg_measurements(5);
+
 	% Derivative - provides QRS slope information.
 	differentiated_ecg_measurements=diff(filtered_ecg_measurements);
+
 
 	% Squaring - intensifies values received in derivative.
         squared_ecg_measurements = differentiated_ecg_measurements.^2;
 
+
+%	plot(squared_ecg_measurements)
+
 	% Moving-window integration.
-        integrated_ecg_measurements = conv(squared_ecg_measurements, ones([1,integration_window]));
+        integrated_ecg_measurements = conv(squared_ecg_measurements, ones([1,integration_window])/integration_window);
+
 
 	% Fiducial mark - peak detection on integrated measurements.
         detected_peaks_indices = findpeaks(integrated_ecg_measurements,findpeaks_limit,findpeaks_spacing);
 
+%	disp(detected_peaks_indices)
+
         detected_peaks_values = integrated_ecg_measurements(detected_peaks_indices);
 
+%	disp(detected_peaks_values)
 end
 
 function y=bandpass_filter(data, lowcut, highcut, signal_freq, filter_order)
@@ -129,27 +142,31 @@ function ind = findpeaks(data,limit,spacing)
         len = length(data);
 	x = zeros([1 ,len + 2 * spacing]);
         x(1:spacing) = data(1) - 1.e-6;
-        x(end-spacing:end) = data(end-1) - 1.e-6;
-	x(spacing:spacing + len-1) = data(1,:);
-        peak_candidate = true ([1,len]);
+        x(end-spacing+1:end+1) = data(end) - 1.e-6;
+	x(spacing+1:spacing + len) = data(1,:);
+        peak_candidate = ones(1,len);
+	
 
-        for s =1:spacing-1
-            start = spacing - s;
+        for s =1:spacing
+            start = spacing - s+1;
             h_b = x(start: start + len);  % before
-            start = spacing;
+            start = spacing+1;
             h_c = x(start: start + len);  % central
-            start = spacing + s;
+            start = spacing + s+1;
             h_a = x(start: start + len);  % after
+	    
 
-		for ii = length(peak_candidate)
-			if (peak_candidate(ii)==1) && ((h_c(ii) > h_b(ii))) && ((h_c(ii) > h_a(ii)))
-				peak_candidate(ii)=true;
+		for ii = 1:length(peak_candidate)
+			if peak_candidate(ii)==1 && (h_c(ii) > h_b(ii) && h_c(ii) > h_a(ii))
+				peak_candidate(ii)=1;
+			else
+				peak_candidate(ii)=0;
 			end
 		end
 	end
 
-        ind = find(peak_candidate);
- 	
+	ind = find(peak_candidate==1);
+
 	if ~isempty(limit)
 		ind = ind(find(data(ind)>limit));
 	end
