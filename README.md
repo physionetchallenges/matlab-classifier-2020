@@ -18,6 +18,16 @@ You can run this prediction code by starting MATLAB and running
 
 where `input_directory` is a directory for input data files and `output_directory` is a directory for output prediction files.  The PhysioNet/CinC 2020 webpage provides a training database with data files and a description of the contents and structure of these files.
 
+## Submission
+
+The driver.py, get_12ECG_score.py, and get_12ECG_features.py scripts to be in the root path of the Github repository. If they are inside a folder, then the submission will fail.
+
 ## Details
 
-See the PhysioNet webpage for more details, including instructions for the other files in this repository.
+The code uses three main toolboxes:
+- HRV toolbox to compute the RR intervals. https://github.com/cliffordlab/PhysioNet-Cardiovascular-Signal-Toolbox.git
+- ECGkit to find the ECG fiducial points: https://github.com/marianux/ecg-kit.git
+- GEH parameter extraction and origin point: https://github.com/Tereshchenkolab/Global-Electrical-Heterogeneity.git and https://github.com/Tereshchenkolab/Origin.git
+
+
+
