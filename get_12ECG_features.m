@@ -1,174 +1,50 @@
-function features = get_12ECG_features(data, hea_data)
+function features = get_12ECG_features(data, header_data)
+
+       % addfunction path needed
+        addpath(genpath('Tools/'))
+        load('HRVparams_12ECG','HRVparams')
 
 	% read number of leads, sample frequency and gain from the header.	
 
-	tmp_hea = strsplit(hea_data{1},' ');
-	number_of_leads = str2num(tmp_hea{2});
-	sample_Fs = str2num(tmp_hea{3});
-	gain_lead = zeros([1,number_of_leads]);
-	
-	for ii=1:number_of_leads
-		tmp_hea = strsplit(hea_data{ii+1},' ');
-		tmp_gain=strsplit(tmp_hea{3},'/');
-		gain_lead(ii)=str2num(tmp_gain{1});
-	end
+	[recording,Total_time,num_leads,Fs,gain]=extract_data_from_header(header_data);
 
-	tmp_label = strsplit(hea_data{16},' ');
-	label = tmp_label{1};
+	HRVparams.Fs=Fs;
+        HRVparams.PeakDetect.windows = floor(Total_time-1);
+        HRVparams.windowlength = floor(Total_time);
 
-%   Loop to get R peaks for all leads but in our sample code
-%   We are only using data from lead1
-%    for ii=1:number_of_leads:
-%        [peaks(ii,:),idx(ii,:)] = detect_peaks(data(ii,:),sample_Fs,gain_lead(ii));
-%    end
+	try
 
-	[peaks,idx]=detect_peaks(data(1,:),sample_Fs,gain_lead(1));
+                for i =1:num_leads
+                        Lead12wGain(i,:) = data(i,:)* gain(i);
+                end
 
 
-	% mean
-	mean_RR = nanmean((idx/sample_Fs)*1000);
-	mean_Peaks = nanmean(peaks*gain_lead(1));
-	% median
-	median_RR = nanmedian((idx/sample_Fs)*1000);
-        median_Peaks = nanmedian(peaks*gain_lead(1));
+                % median filter to remove bw
+                for i=1:num_leads
+                        ECG12filt(i,:) = medianfilter(Lead12wGain(i,:)', Fs);
+                end
 
-      	% standard deviation
-	std_RR = std((idx/sample_Fs)*1000);
-	std_Peaks = std(peaks*gain_lead(1));
+                % convert 12Leads to XYZ leads using Kors transformation
+                XYZLeads = Kors_git(ECG12filt);
 
-	%    variance
-    	var_RR = var((idx/sample_Fs)*1000);
-    	var_Peaks = var(peaks*gain_lead(1));
-
-	%   Skewness
-    	skew_RR = skewness((idx/sample_Fs)*1000);
-    	skew_Peaks = skewness(peaks*gain_lead(1));
-
-	%   Kurtosis
-    	kurt_RR = kurtosis((idx/sample_Fs)*1000);
-    	kurt_Peaks = kurtosis(peaks*gain_lead(1));
-
-	features = [mean_RR mean_Peaks median_RR median_Peaks std_RR std_Peaks var_RR var_Peaks skew_RR skew_Peaks kurt_RR kurt_Peaks];
-end
-
-function [detected_peaks_values,detected_peaks_indices] = detect_peaks(ecg_measurements,signal_frequency,gain)
+                VecMag = vecnorm(XYZLeads');
 
 
-%        Method responsible for extracting peaks from loaded ECG measurements data through measurements processing.
-%        Michał Sznajder (Jagiellonian University) - technical contact (msznajder@gmail.com)
-%        Marta Łukowska (Jagiellonian University)
-%        Janko Slavic peak detection algorithm and implementation.
-%        https://github.com/c-labpl/qrs_detector
-%        https://github.com/jankoslavic/py-tools/tree/master/findpeaks
+                % Convert ECG waveform in rr intervals
+                [t, rr, jqrs_ann, SQIvalue , tSQI] = ConvertRawDataToRRIntervals(VecMag, HRVparams, recording);
+                sqi = [tSQI', SQIvalue'];
 
-        filter_lowcut = 0.001;
-        filter_highcut = 15.0;
-        filter_order = 1;
-        integration_window = 30;  % Change proportionally when adjusting frequency (in samples).
-        findpeaks_limit = 0.35;
-        findpeaks_spacing = 100;  % Change proportionally when adjusting frequency (in samples).
-        refractory_period = 240; % Change proportionally when adjusting frequency (in samples).
-        qrs_peak_filtering_factor = 0.125;
-        noise_peak_filtering_factor = 0.125;
-        qrs_noise_diff_weight = 0.25;
+                % Find fiducial points using ECGKit
+                ECG_header.nsig = 1; ECG_header.freq = Fs; ECG_header.nsamp = length(VecMag);
+                wavedet_config.setup.wavedet.QRS_detection_only = 0;
+                [Fid_pts,~,~] = wavedet_3D_ECGKit(VecMag', jqrs_ann', ECG_header, wavedet_config);
 
-        qrs_peak_value = 0.0;
-        noise_peak_value = 0.0;
-        threshold_value = 0.0;
+                [XYZ_Median,Fid_pts_Median] = Time_coherent_code_github(XYZLeads,Fid_pts,Fs);
 
-        % Measurements filtering - 0-15 Hz band pass filter.
-        filtered_ecg_measurements = bandpass_filter(ecg_measurements, filter_lowcut, filter_highcut, signal_frequency, filter_order);
+                features = GEH_analysis_git(XYZ_Median,Fid_pts_Median,Fs);
 
-
-	filtered_ecg_measurements(1:6)=filtered_ecg_measurements(5);
-
-	% Derivative - provides QRS slope information.
-	differentiated_ecg_measurements=diff(filtered_ecg_measurements);
-
-
-	% Squaring - intensifies values received in derivative.
-        squared_ecg_measurements = differentiated_ecg_measurements.^2;
-
-
-%	plot(squared_ecg_measurements)
-
-	% Moving-window integration.
-        integrated_ecg_measurements = conv(squared_ecg_measurements, ones([1,integration_window])/integration_window);
-
-
-	% Fiducial mark - peak detection on integrated measurements.
-        detected_peaks_indices = findpeaks(integrated_ecg_measurements,findpeaks_limit,findpeaks_spacing);
-
-%	disp(detected_peaks_indices)
-
-        detected_peaks_values = integrated_ecg_measurements(detected_peaks_indices);
-
-%	disp(detected_peaks_values)
-end
-
-function y=bandpass_filter(data, lowcut, highcut, signal_freq, filter_order)
-       
-%        Method responsible for creating and applying Butterworth filter.
-%        :param deque data: raw data
-%        :param float lowcut: filter lowcut frequency value
-%        :param float highcut: filter highcut frequency value
-%        :param int signal_freq: signal frequency in samples per second (Hz)
-%        :param int filter_order: filter order
-%        :return array: filtered data
-
-	nyquist_freq = 0.5 * signal_freq;
-        low = lowcut / nyquist_freq;
-        high = highcut / nyquist_freq;
-        [b, a] = butter(filter_order, [low high], 'bandpass');
-        y = filter(b, a, data);
-end
-
-
-function ind = findpeaks(data,limit,spacing)
-
-%	Janko Slavic peak detection algorithm and implementation.
-%        https://github.com/jankoslavic/py-tools/tree/master/findpeaks
-%        Finds peaks in `data` which are of `spacing` width and >=`limit`.
-%        :param ndarray data: data
-%        :param float spacing: minimum spacing to the next peak (should be 1 or more)
-%        :param float limit: peaks should have value greater or equal
-%        :return array: detected peaks indexes array
-	
-
-	if isempty(spacing)
-		spacing=1;
-	end
-
-        len = length(data);
-	x = zeros([1 ,len + 2 * spacing]);
-        x(1:spacing) = data(1) - 1.e-6;
-        x(end-spacing+1:end+1) = data(end) - 1.e-6;
-	x(spacing+1:spacing + len) = data(1,:);
-        peak_candidate = ones(1,len);
-	
-
-        for s =1:spacing
-            start = spacing - s+1;
-            h_b = x(start: start + len);  % before
-            start = spacing+1;
-            h_c = x(start: start + len);  % central
-            start = spacing + s+1;
-            h_a = x(start: start + len);  % after
-	    
-
-		for ii = 1:length(peak_candidate)
-			if peak_candidate(ii)==1 && (h_c(ii) > h_b(ii) && h_c(ii) > h_a(ii))
-				peak_candidate(ii)=1;
-			else
-				peak_candidate(ii)=0;
-			end
-		end
-	end
-
-	ind = find(peak_candidate==1);
-
-	if ~isempty(limit)
-		ind = ind(find(data(ind)>limit));
+	catch
+		features = NaN(1,22);
 	end
 
 end
