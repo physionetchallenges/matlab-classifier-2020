@@ -32,7 +32,7 @@ The code uses three main toolboxes:
   Demski AJ, Llamedo Soria M. "ecg-kit a Matlab Toolbox for Cardiovascular Signal Processing".  
   Journal of Open Research Software. 2016;4(1):e8. DOI: http://doi.org/10.5334/jors.86
 - GEH parameter extraction and origin point: https://github.com/Tereshchenkolab/Global-Electrical-Heterogeneity.git and https://github.com/Tereshchenkolab/Origin.git. 
-  Erick Perez-Alday,et al; "Importance of the Heart Vector Origin Point Definition for an ECG analysis: 
+  Perez-Alday,et al; "Importance of the Heart Vector Origin Point Definition for an ECG analysis: 
   The Atherosclerosis Risk in Communities (ARIC) study". Comp Biol Med, Volume 104, January 2019, 
   pages 127-138. https://doi.org/10.1016/j.compbiomed.2018.11.013
   Waks JW, et al. "Global Electric Heterogeneity Risk Score for Prediction of Sudden Cardiac Death in the General Population: 
