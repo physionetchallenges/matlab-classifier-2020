@@ -32,7 +32,7 @@ function driver(input_directory, output_directory)
         file_tmp=strsplit(input_files{i},'.');
         tmp_input_file = fullfile(input_directory, file_tmp{1});
         [data,header_data] = load_challenge_data(tmp_input_file);
-        [current_score,current_label] = get_12ECG_score(data,header_data,classes,model);
+        [current_score,current_label] = run_12ECG_classifier(data,header_data,classes,model);
 
         save_challenge_predictions(output_directory,file_tmp{1}, current_score, current_label,classes);
 	
