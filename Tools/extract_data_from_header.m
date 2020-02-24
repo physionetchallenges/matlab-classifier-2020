@@ -1,4 +1,4 @@
-function [recording,Total_time,num_leads,Fs,gain]=extract_data_from_header(header_data);
+function [recording,Total_time,num_leads,Fs,gain,age_data,sex_data]=extract_data_from_header(header_data);
 
 	tmp_hea = strsplit(header_data{1},' ');
 	recording = tmp_hea{1};
@@ -13,5 +13,21 @@ function [recording,Total_time,num_leads,Fs,gain]=extract_data_from_header(heade
                 gain(ii)=str2num(tmp_gain{1});
         end
 
-	
+
+
+        for tline = 1:length(header_data)
+                if startsWith(header_data{tline},'#Age')
+			tmp = strsplit(header_data{tline},': ');
+			age_data = str2num(tmp{2});
+                elseif startsWith(header_data{tline},'#Sex')
+			tmp = strsplit(header_data{tline},': ');
+			if strcmp(tmp{2},'Female')
+				sex_data = 1;
+			else
+				sex_data = 0;
+			end
+		end
+	end
+
+
 end
