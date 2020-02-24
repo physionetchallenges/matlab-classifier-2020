@@ -116,8 +116,8 @@ function save_challenge_predictions(output_directory,recording, scores, labels,c
 	fclose(fid);
 
 	%write data to end of file
-	dlmwrite(output_file,labels,'delimiter',',','-append');
-        dlmwrite(output_file,scores,'delimiter',',','-append');
+	dlmwrite(output_file,labels,'delimiter',',','-append','precision',4);
+        dlmwrite(output_file,scores,'delimiter',',','-append','precision',4);
 
 end
 
