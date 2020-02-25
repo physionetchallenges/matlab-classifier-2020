@@ -23,6 +23,7 @@ where `input_directory` is a directory for input data files and `output_director
 The `driver.m`, `get_12ECG_score.m`, and `get_12ECG_features.m` scripts need to be in the base or root path of the Github repository. If they are inside a subfolder, then the submission will fail.
 
 ## Details
+“The baseline classifiers are simple logistic regression models. They use global electrical heterogeneity (GEH) computed from the WFDB signal file (the `.mat` file) with the [PhysioNet Cardiovascular Signal Toolbox] and demographic data taken directly from the WFDB header file (the `.hea` file) as predictors. 
 
 The code uses three main toolboxes:
 - HRV toolbox to compute the RR intervals: https://github.com/cliffordlab/PhysioNet-Cardiovascular-Signal-Toolbox.git. 
