@@ -22,11 +22,11 @@ You can run this prediction code by starting MATLAB and running
     train_model(training_data, model)
     driver(model, test_data, test_outputs)
 
-where `training_data` is a directory of training data files, `model` is a directory of files for the model, `testing_data` is the directory of test data files, and `test_outputs` is a directory of classifier outputs.  The [PhysioNet/CinC 2020 webpage](https://physionetchallenges.github.io/2020/) provides a training database with data files and a description of the contents and structure of these files.
+where `training_data` is a directory of training data files, `model` is a directory of files for the model, `test_data` is the directory of test data files, and `test_outputs` is a directory of classifier outputs.  The [PhysioNet/CinC 2020 webpage](https://physionetchallenges.github.io/2020/) provides a training database with data files and a description of the contents and structure of these files.
 
 ## Submission
 
-The `driver.m`, `get_12ECG_score.m`, and `get_12ECG_features.m` scripts must be in the root path of your repository. If they are inside a folder, then the submission will fail.
+The `driver.m`, `get_12ECG_score.m`, and `get_12ECG_features.m` scripts must be in the root path of your repository. If they are inside a folder, then the submission will be unsuccessful.
 
 ## Details
 
@@ -43,7 +43,3 @@ The code uses three main toolboxes:
   pages 127-138. https://doi.org/10.1016/j.compbiomed.2018.11.013
   Waks JW, et al. "Global Electric Heterogeneity Risk Score for Prediction of Sudden Cardiac Death in the General Population: 
   The Atherosclerosis Risk in Communities (ARIC) and Cardiovascular Health (CHS) Studies". Circulation. 2016;133:2222-2234.
-
- 
-
-
