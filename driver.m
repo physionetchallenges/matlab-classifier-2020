@@ -1,4 +1,4 @@
-function driver(input_directory, output_directory)
+function driver(model_directory,input_directory, output_directory)
 
     
 	% Find files.
@@ -20,7 +20,7 @@ function driver(input_directory, output_directory)
 
     % Load model.
     disp('Loading 12ECG model...')
-    model = load_12ECG_model();
+    model = load_12ECG_model(model_directory);
 
     % Iterate over files.
     disp('Predicting 12ECG labels...')
