@@ -4,8 +4,8 @@
 
 This code uses two main scripts to train the model and classify the data:
 
-* `train_model.m` Train your model. Add your model code to the `train_12ECG_model` function. It also performs all file input and output. **Do not** edit this script -- or we will be unable to evaluate your submission.
-* `driver.m` is the classifier which calls the output from your train_model. It also performs all file input and output. **Do not** edit this script -- or we will be unable to evaluate your submission.
+* `train_model.m` Train your model. Add your model code to the `train_12ECG_model` function. It also performs all file input and output. **Do not** edit this script or we will be unable to evaluate your submission.
+* `driver.m` is the classifier which calls the output from your train_model. It also performs all file input and output. **Do not** edit this script or we will be unable to evaluate your submission.
 
 Check the code in these files for the input and output formats for the `train_model` and `driver` functions.
 
@@ -26,7 +26,7 @@ where `training_data` is a directory of training data files, `model` is a direct
 
 ## Submission
 
-The driver.py, get_12ECG_score.py, and get_12ECG_features.py scripts to be in the root path of the Github repository. If they are inside a folder, then the submission will fail.
+The `driver.m`, `get_12ECG_score.m`, and `get_12ECG_features.m` scripts must be in the root path of your repository. If they are inside a folder, then the submission will fail.
 
 ## Details
 
