@@ -66,15 +66,15 @@ end
 
 model = mnrfit(features,label,'model','hierarchical');
 
-save_12_ECG_model(model,output_directory);
+save_12_ECG_model(model,output_directory,classes);
 
 end
 
-function save_12_ECG_model(model,output_directory)
+function save_12_ECG_model(model,output_directory,classes)
 % Save results.
 tmp_file = 'finalized_model.mat';
 filename=fullfile(output_directory,tmp_file);
-save(filename,'model','-v7.3');
+save(filename,'model','classes','-v7.3');
 
 
 disp('Done.')

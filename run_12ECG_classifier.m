@@ -1,4 +1,8 @@
-function [score, label] = run_12ECG_classifier(data,header_data,classes, model)
+function [score, label,classes] = run_12ECG_classifier(data,header_data, loaded_model)
+
+
+	model=loaded_model.model;
+	classes=loaded_model.classes;
 
     num_classes = length(classes);
 

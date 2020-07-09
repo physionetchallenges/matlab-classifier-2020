@@ -14,9 +14,6 @@ function driver(model_directory,input_directory, output_directory)
     end
 
     
-    % read number of unique classes
-    classes = get_classes(input_directory,input_files);
-
 
     % Load model.
     disp('Loading 12ECG model...')
@@ -32,7 +29,7 @@ function driver(model_directory,input_directory, output_directory)
         file_tmp=strsplit(input_files{i},'.');
         tmp_input_file = fullfile(input_directory, file_tmp{1});
         [data,header_data] = load_challenge_data(tmp_input_file);
-        [current_score,current_label] = run_12ECG_classifier(data,header_data,classes,model);
+        [current_score,current_label,classes] = run_12ECG_classifier(data,header_data,model);
 
         save_challenge_predictions(output_directory,file_tmp{1}, current_score, current_label,classes);
 	
@@ -67,42 +64,6 @@ function [data,tlines] = load_challenge_data(filename)
         end
 
 end
-
-% find unique number of classes
-function classes = get_classes(input_directory,files)
-	
-	classes={};
-	num_files = length(files);
-	k=1;
-    	for i = 1:num_files
-		g = strrep(files{i},'.mat','.hea');
-		input_file = fullfile(input_directory, g);
-	        fid=fopen(input_file);
-	        tline = fgetl(fid);
-        	tlines = cell(0,1);
-
-		while ischar(tline)
-        	    tlines{end+1,1} = tline;
-	            tline = fgetl(fid);
-			if startsWith(tline,'#Dx')
-				tmp = strsplit(tline,': ');
-				tmp_c = strsplit(tmp{2},',');
-				for j=1:length(tmp_c)
-		                	idx2 = find(strcmp(classes,tmp_c{j}));
-		                	if isempty(idx2)
-                	        		classes{k}=tmp_c{j};
-                        			k=k+1;
-                			end
-				end
-			break
-        		end
-		end
-        	fclose(fid);
-	end
-	classes=sort(classes)
-end
-
-
 
 function save_challenge_predictions(output_directory,recording, scores, labels,classes)
 
